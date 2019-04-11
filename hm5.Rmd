@@ -1,0 +1,58 @@
+---
+title: "hw5"
+author: "Zihao Han"
+date: "April 11, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+if (file.exists("alcohol.rds")) {
+  data <- readRDS("alcohol.rds")
+} else {
+  url <- "https://xdaiisu.github.io/ds202materials/data/ames.csv"
+  data <- readr::read_csv(url)
+  saveRDS(data, file="alcohol.rds")
+} 
+
+dat<-readRDS("alcohol.rds")
+
+library(lubridate)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+a<- dat %>% separate('Store Location', into = c("A", "B","latlong"),sep="\n")%>%
+  unite(StoreLocation,A,B)%>%
+  mutate(latlong=gsub("[()]","",latlong))%>%
+  separate("latlong",into=c("lat","long"),sep=",")
+
+
+
+a$lat=as.numeric(a$lat)
+a$long=as.numeric(a$long)
+a$`Vendor Number`=as.numeric(a$`Vendor Number`)
+a$`State Bottle Cost`=as.double(a$`State Bottle Cost`)
+a$`Volume Sold (Gallons)`=as.double(a$`Volume Sold (Gallons)`)
+
+str(a)
+b<-a%>%separate('Date', into = c("month", "day","year"))
+
+ggplot(b,aes(x=long,y=lat))+geom_point()
+ggplot(b,aes(x=`Category Name`,y=`Volume Sold (Liters)`))+geom_boxplot()
+b%>%group_by(`Bottles Sold`)
+ggplot(b,aes(x=day,y=`Volume Sold (Liters)`))+geom_point()+facet_wrap(~month)
+
+c<- b%>%filter(year==2018)
+
+dailysale<-c%>% group_by(day,month)%>%summarize(sumBottleSold=sum(`Bottles Sold`),sumSale=sum(`Sale (Dollars)`),sumVolumnSold=sum(`Volume Sold (Liters)`))
+dailysale
+dailysale
+ggplot(c,aes(x=day,y=`Volume Sold (Liters)`))+geom_point()+facet_wrap(~month)
+ggplot(dailysale,aes(x=day,y=`sumVolumnSold`))+geom_point()+facet_wrap(~month)
+```
+#### home games at sep 1th, sep 15th, sep 22th, oct 13th, oct 27th, Nov 10th, Nov 24th, Dec 1th.
+####the date that have football home that dont have liqor sale.
+####that might be the reason we lack of data, for example we dont have data for sep and most of oct. but for the data we have Nov and Dec, Nov 10th, 24th and Dec 1th have no liquior sale. 
